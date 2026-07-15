@@ -1,0 +1,2 @@
+# Track large NumPy arrays with Git LFS
+FEM_data/**/*.npy filter=lfs diff=lfs merge=lfs -text

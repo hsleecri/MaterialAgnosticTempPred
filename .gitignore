@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Training outputs
+results/
+wandb/
+outputs/
+.hydra/
+collocation_vis/
+collocation_snapshots/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large data files — tracked via Git LFS (see .gitattributes)
+# FEM_data/**/*.npy

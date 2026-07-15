@@ -1,0 +1,92 @@
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: .
+
+base:
+  device: 0           # GPU device index (e.g., 0 for cuda:0)
+  seed: 3
+  output: run
+  epoch_final: 10000
+
+validation:
+  valid:
+    - Github/FEM_data/Ti_6AL_4V_(4430,560,6.7)/data/data.npy
+    - Github/FEM_data/Inconel718_(8220,435,11.4)/data/data.npy
+    - Github/FEM_data/SS316L_(8000,500,16)/data/data.npy
+    - Github/FEM_data/AlSi10Mg_(2670,950,150)/data/data.npy
+    - Github/FEM_data/Copper_(8960,385,401)/data/data.npy
+
+domain:
+  xt_bounds: [0.0, 40.0, 0.0, 10.0, 0.0, 6.0, 0.0, 3.0]  # x_min, x_max, y_min, y_max, z_min, z_max, t_min, t_max [mm, s]
+
+laser:
+  x0: 5.0         # initial laser center x-coordinate [mm]
+  y0: 5.0         # initial laser center y-coordinate [mm]
+  r_beam: 1.5     # laser beam radius [mm]
+  v_scan: 10.0    # laser scanning speed [mm/s]
+  t_end: 3.0      # total scanning time [s]
+  p_laser: 500.0  # laser power [W]
+  eta_abs: 0.4    # laser absorptivity [-]
+
+bc:
+  t_ref: 300.0        # ambient / initial temperature [K]
+  h_conv: 5.0e-5      # convection coefficient [W/(mm^2·K)]
+  rboltz: 5.6704e-14  # Stefan-Boltzmann constant [W/(mm^2·K^4)]
+  emiss: 0.3          # surface emissivity [-]
+
+material:
+  # Training material property space M
+  # Bounds defined over representative metal AM alloys
+  rho_bounds_si: [3000.0, 10000.0]  # density [kg/m^3]
+  cp_bounds_si: [300.0, 1000.0]     # specific heat capacity [J/(kg·K)]
+  k_bounds_si: [3.0, 50.0]          # thermal conductivity [W/(m·K)]
+
+training:
+  info_num: 100   # validation interval (epochs)
+
+collocation:
+  # Manual sampling grid parameters
+  t_samples: 61
+  t_start_offset: 0.01
+  bc_density: 1.0
+  bc_top_density: 0.25
+  bc_top_radius_mult: 2.0
+  domain_density_low: 2.0
+  domain_density_mid: 1.0
+  domain_density_top: 0.5
+  z_mid_thickness: 3.0
+  z_top_thickness: 1.0
+  z_mid_overlap: 0.5
+  z_top_overlap: 0.25
+  init_density: 2.0
+  init_focus_density: 0.5
+  init_focus_xy_radius: 2.0
+  init_focus_z_thickness: 2.0
+
+schedule:
+  # adam_epochs: number of Adam epochs; -1 defaults to min(2000, epoch_final)
+  adam_epochs: -1
+  # bc_only_epochs: curriculum learning duration (BC-only phase); -1 defaults to min(200, adam_epochs)
+  bc_only_epochs: -1
+  ic_weight: 1.0e-4   # weight for IC loss (w_ic)
+  # Adam mini-batch sizes
+  adam_lr: 2.0e-4
+  adam_bc_sub: 12000
+  adam_ic_sub: 6000
+  adam_pde_sub: 20000
+  # L-BFGS mini-batch sizes
+  lbfgs_bc_sub: 8000
+  lbfgs_ic_sub: 4000
+  lbfgs_pde_sub: 12000
+  lbfgs_refresh_every: 200    # collocation subset refresh interval (L-BFGS epochs)
+  lbfgs_lr: 1.0
+  lbfgs_max_iter: 50
+  lbfgs_history_size: 50
+  lbfgs_line_search: strong_wolfe
+  lbfgs_use_full_batch: true
+
+masks:
+  top_z_tol: 1.0e-3
+  laser_mask_radius_mult: 2.0
